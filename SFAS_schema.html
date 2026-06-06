@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SFAS — Smart Finance Accounting System</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #04080f;
+    --deep: #080e1a;
+    --panel: #0d1525;
+    --card: #111c30;
+    --border: #1a2d4a;
+    --accent-gold: #f0a500;
+    --accent-cyan: #00d4ff;
+    --accent-green: #00e676;
+    --accent-red: #ff3d57;
+    --accent-purple: #9c6cff;
+    --accent-orange: #ff6b2b;
+    --text-primary: #e8f0fe;
+    --text-secondary: #7a9cc8;
+    --text-dim: #3a5070;
+    --glow-gold: 0 0 20px rgba(240,165,0,0.4);
+    --glow-cyan: 0 0 20px rgba(0,212,255,0.4);
+    --glow-green: 0 0 20px rgba(0,230,118,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--void);
+    color: var(--text-primary);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 60px 0 40px;
+    text-align: center;
+    position: relative;
+  }
+
+  .header-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent-cyan);
+    border: 1px solid var(--accent-cyan);
+    padding: 4px 16px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    animation: pulse-border 3s infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 0 rgba(0,212,255,0); }
+    50% { box-shadow: 0 0 12px rgba(0,212,255,0.5); }
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 8vw, 96px);
+    letter-spacing: 6px;
+    line-height: 0.9;
+    background: linear-gradient(135deg, var(--accent-gold) 0%, #fff 50%, var(--accent-cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+
+  .header-sub {
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .version-tag {
+    font-size: 10px;
+    color: var(--accent-gold);
+    letter-spacing: 2px;
+  }
+
+  /* Decorative lines */
+  .header-line {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-cyan), var(--accent-gold), var(--accent-cyan), transparent);
+    margin: 30px 0;
+    opacity: 0.6;
+  }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 5px;
+    color: var(--accent-gold);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent-gold), transparent);
+    opacity: 0.4;
+  }
+
+  .section-label .num {
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+  }
+
+  /* ── SCHEMA BLOCK ── */
+  .schema-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--accent-gold);
+    padding: 32px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow-x: auto;
+  }
+
+  .schema-wrapper::before {
+    content: 'DATABASE SCHEMA v2.0';
+    position: absolute;
+    top: -1px;
+    right: 24px;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--accent-gold);
+    background: var(--panel);
+    padding: 0 8px;
+  }
+
+  .schema-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .schema-table {
+    background: var(--card);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .schema-table:hover {
+    border-color: var(--accent-cyan);
+    transform: translateY(-2px);
+    box-shadow: var(--glow-cyan);
+  }
+
+  .schema-table.highlight-gold { border-top: 2px solid var(--accent-gold); }
+  .schema-table.highlight-cyan { border-top: 2px solid var(--accent-cyan); }
+  .schema-table.highlight-green { border-top: 2px solid var(--accent-green); }
+  .schema-table.highlight-red { border-top: 2px solid var(--accent-red); }
+  .schema-table.highlight-purple { border-top: 2px solid var(--accent-purple); }
+  .schema-table.highlight-orange { border-top: 2px solid var(--accent-orange); }
+
+  .table-header {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-icon { font-size: 14px; }
+
+  .table-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-primary);
+  }
+
+  .table-tag {
+    margin-left: auto;
+    font-size: 8px;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+
+  .tag-core { background: rgba(0,212,255,0.15); color: var(--accent-cyan); }
+  .tag-tx { background: rgba(0,230,118,0.12); color: var(--accent-green); }
+  .tag-ref { background: rgba(240,165,0,0.12); color: var(--accent-gold); }
+  .tag-ai { background: rgba(156,108,255,0.15); color: var(--accent-purple); }
+  .tag-report { background: rgba(255,61,87,0.12); color: var(--accent-red); }
+
+  .field-list { padding: 8px 0; }
+
+  .field-row {
+    padding: 4px 14px;
+    display: grid;
+    grid-template-columns: 16px 1fr auto;
+    gap: 8px;
+    align-items: center;
+    font-size: 10px;
+    transition: background 0.15s;
+  }
+
+  .field-row:hover { background: rgba(255,255,255,0.04); }
+
+  .field-key { color: var(--accent-gold); font-size: 9px; }
+  .field-fk { color: var(--accent-orange); font-size: 9px; }
+  .field-name { color: var(--text-primary); font-family: 'IBM Plex Mono', monospace; }
+  .field-type { color: var(--text-dim); font-size: 9px; letter-spacing: 1px; }
+
+  .pk-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-gold); }
+  .fk-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-orange); }
+  .reg-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text-dim); }
+
+  /* ── ARCHITECTURE FLOW ── */
+  .arch-flow {
+    margin-bottom: 40px;
+  }
+
+  .flow-layer {
+    margin-bottom: 16px;
+  }
+
+  .layer-title {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+
+  .layer-nodes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .node {
+    padding: 10px 18px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    background: var(--card);
+    transition: all 0.2s;
+    cursor: default;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .node:hover {
+    transform: translateY(-2px);
+  }
+
+  .node.entry { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+  .node.entry:hover { box-shadow: var(--glow-cyan); background: rgba(0,212,255,0.06); }
+
+  .node.engine { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(240,165,0,0.06); }
+  .node.engine:hover { box-shadow: var(--glow-gold); }
+
+  .node.core-module { border-color: var(--accent-green); color: var(--accent-green); }
+  .node.core-module:hover { box-shadow: var(--glow-green); background: rgba(0,230,118,0.05); }
+
+  .node.ledger { border-color: var(--accent-purple); color: var(--accent-purple); background: rgba(156,108,255,0.08); }
+  .node.report { border-color: var(--text-secondary); color: var(--text-secondary); }
+  .node.report:hover { background: rgba(122,156,200,0.08); }
+
+  .node.ai-node { border-color: var(--accent-purple); color: var(--accent-purple); }
+  .node.ai-node:hover { box-shadow: 0 0 16px rgba(156,108,255,0.4); background: rgba(156,108,255,0.08); }
+
+  .node.infra { border-color: var(--accent-orange); color: var(--accent-orange); }
+
+  .node-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+    animation: blink 2s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* Arrow connector */
+  .flow-arrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 28px;
+    color: var(--text-dim);
+    font-size: 18px;
+    position: relative;
+  }
+
+  .flow-arrow::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(180deg, transparent, var(--accent-cyan), transparent);
+    opacity: 0.4;
+  }
+
+  /* ── MODULE DETAIL CARDS ── */
+  .modules-section { margin-bottom: 40px; }
+
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+
+  .module-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s;
+  }
+
+  .module-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent, transparent);
+  }
+
+  .module-card:hover { transform: translateY(-3px); }
+
+  .mc-sales::before { background: var(--accent-cyan); }
+  .mc-procurement::before { background: var(--accent-orange); }
+  .mc-inventory::before { background: var(--accent-green); }
+  .mc-payroll::before { background: var(--accent-purple); }
+  .mc-assets::before { background: var(--accent-gold); }
+  .mc-banking::before { background: #00bcd4; }
+  .mc-budget::before { background: var(--accent-red); }
+  .mc-core::before { background: #fff; }
+
+  .mc-sales:hover { box-shadow: 0 8px 30px rgba(0,212,255,0.15); border-color: rgba(0,212,255,0.4); }
+  .mc-procurement:hover { box-shadow: 0 8px 30px rgba(255,107,43,0.15); border-color: rgba(255,107,43,0.4); }
+  .mc-inventory:hover { box-shadow: 0 8px 30px rgba(0,230,118,0.15); border-color: rgba(0,230,118,0.4); }
+  .mc-payroll:hover { box-shadow: 0 8px 30px rgba(156,108,255,0.15); border-color: rgba(156,108,255,0.4); }
+  .mc-assets:hover { box-shadow: 0 8px 30px rgba(240,165,0,0.15); border-color: rgba(240,165,0,0.4); }
+  .mc-banking:hover { box-shadow: 0 8px 30px rgba(0,188,212,0.15); border-color: rgba(0,188,212,0.4); }
+  .mc-budget:hover { box-shadow: 0 8px 30px rgba(255,61,87,0.15); border-color: rgba(255,61,87,0.4); }
+
+  .module-icon { font-size: 28px; margin-bottom: 10px; }
+
+  .module-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    margin-bottom: 6px;
+  }
+
+  .module-desc {
+    font-size: 10px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .module-features {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .feature-chip {
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  .feature-chip:hover {
+    background: rgba(0,212,255,0.08);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+
+  /* ── FINANCIAL REPORTS STRIP ── */
+  .reports-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 768px) {
+    .reports-strip { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .report-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px 16px;
+    text-align: center;
+    transition: all 0.2s;
+    cursor: default;
+  }
+
+  .report-card:hover {
+    border-color: var(--accent-gold);
+    box-shadow: var(--glow-gold);
+    background: rgba(240,165,0,0.05);
+  }
+
+  .report-card .ri { font-size: 22px; margin-bottom: 8px; }
+  .report-card .rn {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    color: var(--accent-gold);
+    text-transform: uppercase;
+  }
+
+  /* ── AI INTELLIGENCE PANEL ── */
+  .ai-panel {
+    background: linear-gradient(135deg, rgba(156,108,255,0.06) 0%, rgba(0,212,255,0.04) 100%);
+    border: 1px solid rgba(156,108,255,0.3);
+    padding: 28px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ai-panel::before {
+    content: 'AI INTELLIGENCE LAYER';
+    position: absolute;
+    top: 12px; right: 16px;
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--accent-purple);
+    opacity: 0.6;
+  }
+
+  .ai-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .ai-feature {
+    padding: 14px;
+    background: rgba(156,108,255,0.06);
+    border: 1px solid rgba(156,108,255,0.2);
+    transition: all 0.2s;
+  }
+
+  .ai-feature:hover {
+    background: rgba(156,108,255,0.12);
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 16px rgba(156,108,255,0.2);
+  }
+
+  .ai-feature-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    color: var(--accent-purple);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .ai-feature-desc {
+    font-size: 9px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── INFRA STRIP ── */
+  .infra-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 40px;
+  }
+
+  .infra-node {
+    padding: 10px 16px;
+    background: rgba(255,107,43,0.06);
+    border: 1px solid rgba(255,107,43,0.25);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent-orange);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+
+  .infra-node:hover {
+    background: rgba(255,107,43,0.12);
+    box-shadow: 0 0 12px rgba(255,107,43,0.3);
+  }
+
+  /* ── ACCESS LAYER ── */
+  .access-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+
+  .access-node {
+    flex: 1; min-width: 180px;
+    padding: 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .access-node:hover {
+    border-color: var(--accent-cyan);
+    background: rgba(0,212,255,0.04);
+  }
+
+  .access-node .an-icon { font-size: 20px; margin-bottom: 6px; }
+  .access-node .an-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+  }
+
+  .access-node .an-desc {
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── MASTER DATA PANEL ── */
+  .master-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-gold);
+    padding: 24px;
+    margin-bottom: 40px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .master-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 4px;
+    color: var(--accent-gold);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+  }
+
+  .master-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+  }
+
+  .master-item {
+    padding: 8px 12px;
+    background: rgba(240,165,0,0.04);
+    border: 1px solid rgba(240,165,0,0.15);
+    font-size: 10px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+
+  .master-item:hover {
+    background: rgba(240,165,0,0.1);
+    color: var(--accent-gold);
+    border-color: var(--accent-gold);
+  }
+
+  .master-item::before {
+    content: '◆';
+    font-size: 6px;
+    color: var(--accent-gold);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 30px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: gap;
+    gap: 12px;
+  }
+
+  .footer-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 4px;
+    color: var(--accent-gold);
+  }
+
+  .footer-meta {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+  }
+
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* ── ANIMATE IN ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeIn 0.6s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in:nth-child(1) { animation-delay: 0.1s; }
+  .fade-in:nth-child(2) { animation-delay: 0.2s; }
+  .fade-in:nth-child(3) { animation-delay: 0.3s; }
+  .fade-in:nth-child(4) { animation-delay: 0.4s; }
+
+  /* ── PORTAL ECOSYSTEM ── */
+  .portal-ecosystem {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .portal-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-cyan);
+    padding: 20px;
+    transition: all 0.25s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .portal-card:hover {
+    border-color: var(--accent-cyan);
+    box-shadow: var(--glow-cyan);
+    transform: translateY(-2px);
+  }
+
+  .portal-card.pc-storefront { border-left-color: var(--accent-gold); }
+  .portal-card.pc-supplier { border-left-color: var(--accent-orange); }
+  .portal-card.pc-hr { border-left-color: var(--accent-purple); }
+  .portal-card.pc-projects { border-left-color: var(--accent-green); }
+  .portal-card.pc-mfg { border-left-color: var(--accent-orange); }
+  .portal-card.pc-crm { border-left-color: #00bcd4; }
+  .portal-card.pc-edi { border-left-color: var(--accent-red); }
+  .portal-card.pc-docs { border-left-color: var(--accent-cyan); }
+  .portal-card.pc-collab { border-left-color: var(--accent-purple); }
+  .portal-card.pc-trace { border-left-color: var(--accent-orange); }
+  .portal-card.pc-inv { border-left-color: var(--accent-gold); }
+  .portal-card.pc-dev { border-left-color: var(--accent-cyan); }
+  .portal-card.pc-store { border-left-color: var(--accent-gold); }
+
+  .portal-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .portal-card-icon {
+    font-size: 22px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .portal-card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 3px;
+    color: var(--text-primary);
+  }
+
+  .portal-card-desc {
+    font-size: 9px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    letter-spacing: 0.5px;
+  }
+
+  .portal-card-routes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .portal-route {
+    font-size: 7px;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    background: rgba(0,212,255,0.06);
+    border: 1px solid rgba(0,212,255,0.15);
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+  }
+
+  .portal-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 8px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+
+  .portal-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 7px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .portal-badge.pb-internal { background: rgba(0,212,255,0.12); color: var(--accent-cyan); }
+  .portal-badge.pb-external { background: rgba(240,165,0,0.12); color: var(--accent-gold); }
+  .portal-badge.pb-hybrid { background: rgba(0,230,118,0.12); color: var(--accent-green); }
+
+  /* ── INTEGRATION LINES ── */
+  .integration-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 40px;
+  }
+
+  .integration-pill {
+    padding: 6px 12px;
+    background: rgba(0,230,118,0.04);
+    border: 1px solid rgba(0,230,118,0.15);
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--accent-green);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .integration-pill:hover {
+    background: rgba(0,230,118,0.1);
+    box-shadow: 0 0 8px rgba(0,230,118,0.2);
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--void); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header class="fade-in">
+    <div class="header-badge">◈ Reverse Engineered Architecture ◈</div>
+    <h1>SFAS</h1>
+    <div class="header-sub">Smart Finance Accounting System</div>
+    <div class="version-tag">SCHEMA v2.0 · FULL ARCHITECTURE BLUEPRINT · PORTAL ECOSYSTEM · 2026</div>
+    <div class="header-line"></div>
+  </header>
+
+  <!-- ACCESS LAYER -->
+  <div class="fade-in">
+    <div class="section-label"><span class="num">01</span> Client Access Layer</div>
+    <div class="access-row">
+      <div class="access-node">
+        <div class="an-icon">🌐</div>
+        <div class="an-name">Web / Mobile Apps</div>
+        <div class="an-desc">SPA & PWA interfaces for all user roles</div>
+      </div>
+      <div class="access-node">
+        <div class="an-icon">⚡</div>
+        <div class="an-name">API Gateway</div>
+        <div class="an-desc">REST / GraphQL · Rate limiting · Versioning</div>
+      </div>
+      <div class="access-node">
+        <div class="an-icon">📊</div>
+        <div class="an-name">BI Dashboards</div>
+        <div class="an-desc">Real-time KPI visualization & drill-down</div>
+      </div>
+      <div class="access-node">
+        <div class="an-icon">🔐</div>
+        <div class="an-name">AUTH / RBAC</div>
+        <div class="an-desc">JWT · OAuth2 · Role-based access control</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE FLOW -->
+  <div class="fade-in">
+    <div class="section-label"><span class="num">02</span> System Architecture Flow</div>
+    <div class="arch-flow">
+
+      <div class="flow-layer">
+        <div class="layer-title">Event Bus — Central Nervous System</div>
+        <div class="layer-nodes">
+          <div class="node engine" style="flex:1; justify-content:center;">
+            <span class="node-dot"></span>
+            ACCOUNTING EVENT BUS
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-layer">
+        <div class="layer-title">Source Modules — Feeding the Bus</div>
+        <div class="layer-nodes">
+          <div class="node core-module">🛒 Sales Orders</div>
+          <div class="node core-module">📦 Inventory</div>
+          <div class="node core-module">🔧 Procurement</div>
+          <div class="node core-module">👥 Payroll</div>
+          <div class="node core-module">🏗️ Fixed Assets</div>
+          <div class="node core-module">🏦 Banking</div>
+          <div class="node core-module">💼 Budget</div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-layer">
+        <div class="layer-title">Posting Engine — Core Processing</div>
+        <div class="layer-nodes">
+          <div class="node engine" style="flex:1; justify-content:center;">
+            <span class="node-dot"></span>
+            POSTING ENGINE · Posting Rules · Validation · GL Mapping
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-layer">
+        <div class="layer-title">Transaction Core</div>
+        <div class="layer-nodes">
+          <div class="node ledger" style="flex:2; justify-content:center;">⬡ JOURNAL ENTRIES</div>
+          <div class="node entry">Journal Lines</div>
+          <div class="node entry">Audit Log</div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-layer">
+        <div class="layer-title">General Ledger — Single Source of Truth</div>
+        <div class="layer-nodes">
+          <div class="node ledger" style="flex:1; justify-content:center; font-size:14px;">
+            <span class="node-dot"></span>
+            GENERAL LEDGER
+          </div>
+          <div class="node entry">GL Balances</div>
+          <div class="node entry">Currency Rates</div>
+          <div class="node entry">Depreciation</div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-layer">
+        <div class="layer-title">Financial Reports</div>
+        <div class="reports-strip">
+          <div class="report-card"><div class="ri">⚖️</div><div class="rn">Trial Balance</div></div>
+          <div class="report-card"><div class="ri">📋</div><div class="rn">Profit & Loss</div></div>
+          <div class="report-card"><div class="ri">🏛️</div><div class="rn">Balance Sheet</div></div>
+          <div class="report-card"><div class="ri">💸</div><div class="rn">Cash Flow</div></div>
+          <div class="report-card"><div class="ri">🔄</div><div class="rn">Interco Accounting</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DATABASE SCHEMA -->
+  <div class="fade-in">
+    <div class="section-label"><span class="num">03</span> Database Schema — Merged ERD</div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent-gold)"></div> Primary Key</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent-orange)"></div> Foreign Key</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--text-dim)"></div> Field</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent-cyan)"></div> Core Table</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent-green)"></div> Transaction Table</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent-purple)"></div> AI / Analytics</div>
+    </div>
+
+    <div class="schema-wrapper">
+      <div class="schema-grid">
+
+        <!-- COMPANIES -->
+        <div class="schema-table highlight-gold">
+          <div class="table-header">
+            <div class="table-icon">🏢</div>
+            <div class="table-name">companies</div>
+            <div class="table-tag tag-core">CORE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">company_code</span><span class="field-type">VARCHAR(10)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">company_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">currency_code</span><span class="field-type">CHAR(3)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">fiscal_year_start</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">country_code</span><span class="field-type">CHAR(2)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">is_active</span><span class="field-type">BOOLEAN</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">created_at</span><span class="field-type">TIMESTAMP</span></div>
+          </div>
+        </div>
+
+        <!-- BRANCHES -->
+        <div class="schema-table highlight-gold">
+          <div class="table-header">
+            <div class="table-icon">🏪</div>
+            <div class="table-name">branches</div>
+            <div class="table-tag tag-core">CORE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">branch_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">branch_code</span><span class="field-type">VARCHAR(10)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">branch_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">region</span><span class="field-type">VARCHAR(100)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">cost_center_id</span><span class="field-type">UUID FK</span></div>
+          </div>
+        </div>
+
+        <!-- CHART OF ACCOUNTS -->
+        <div class="schema-table highlight-gold">
+          <div class="table-header">
+            <div class="table-icon">📒</div>
+            <div class="table-name">chart_of_accounts</div>
+            <div class="table-tag tag-core">CORE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">account_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">account_code</span><span class="field-type">VARCHAR(20)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">account_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">account_type</span><span class="field-type">ENUM(ASSET,LIAB,EQ,INC,EXP)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">normal_balance</span><span class="field-type">ENUM(DR,CR)</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">parent_account_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">level</span><span class="field-type">TINYINT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">is_control</span><span class="field-type">BOOLEAN</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">allow_posting</span><span class="field-type">BOOLEAN</span></div>
+          </div>
+        </div>
+
+        <!-- ACCOUNTING PERIODS -->
+        <div class="schema-table highlight-gold">
+          <div class="table-header">
+            <div class="table-icon">📅</div>
+            <div class="table-name">accounting_periods</div>
+            <div class="table-tag tag-ref">REF</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">period_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">period_name</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">fiscal_year</span><span class="field-type">YEAR</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">period_number</span><span class="field-type">TINYINT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">start_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">end_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(OPEN,CLOSED,LOCKED)</span></div>
+          </div>
+        </div>
+
+        <!-- CURRENCY RATES -->
+        <div class="schema-table highlight-cyan">
+          <div class="table-header">
+            <div class="table-icon">💱</div>
+            <div class="table-name">currency_exchange_rates</div>
+            <div class="table-tag tag-ref">REF</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">rate_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">from_currency</span><span class="field-type">CHAR(3)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">to_currency</span><span class="field-type">CHAR(3)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">rate_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">exchange_rate</span><span class="field-type">DECIMAL(18,6)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">rate_type</span><span class="field-type">ENUM(SPOT,AVG,HIST)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">source</span><span class="field-type">VARCHAR(50)</span></div>
+          </div>
+        </div>
+
+        <!-- POSTING RULES -->
+        <div class="schema-table highlight-cyan">
+          <div class="table-header">
+            <div class="table-icon">⚙️</div>
+            <div class="table-name">posting_rules</div>
+            <div class="table-tag tag-core">CORE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">rule_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">module_source</span><span class="field-type">ENUM(SALES,INV,PROC...)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">transaction_type</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">debit_account_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">credit_account_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">is_active</span><span class="field-type">BOOLEAN</span></div>
+          </div>
+        </div>
+
+        <!-- JOURNAL ENTRIES -->
+        <div class="schema-table highlight-green">
+          <div class="table-header">
+            <div class="table-icon">📝</div>
+            <div class="table-name">journal_entries</div>
+            <div class="table-tag tag-tx">TRANSACTION</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">entry_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">branch_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">period_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">entry_number</span><span class="field-type">VARCHAR(30)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">entry_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">description</span><span class="field-type">TEXT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">source_module</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">source_ref_id</span><span class="field-type">UUID</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">currency_code</span><span class="field-type">CHAR(3)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(DRAFT,POSTED,REVERSED)</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">posted_by</span><span class="field-type">UUID FK → users</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">posted_at</span><span class="field-type">TIMESTAMP</span></div>
+          </div>
+        </div>
+
+        <!-- JOURNAL LINES -->
+        <div class="schema-table highlight-green">
+          <div class="table-header">
+            <div class="table-icon">📋</div>
+            <div class="table-name">journal_lines</div>
+            <div class="table-tag tag-tx">TRANSACTION</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">line_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">entry_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">line_number</span><span class="field-type">INT</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">account_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">cost_center_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">debit_amount</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">credit_amount</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">base_debit</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">base_credit</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">fx_rate</span><span class="field-type">DECIMAL(18,6)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">narration</span><span class="field-type">VARCHAR(500)</span></div>
+          </div>
+        </div>
+
+        <!-- GL BALANCES -->
+        <div class="schema-table highlight-cyan">
+          <div class="table-header">
+            <div class="table-icon">⚡</div>
+            <div class="table-name">gl_balances</div>
+            <div class="table-tag tag-core">CORE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">balance_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">account_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">period_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">branch_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">opening_balance</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">period_debit</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">period_credit</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">closing_balance</span><span class="field-type">DECIMAL(18,4)</span></div>
+          </div>
+        </div>
+
+        <!-- AUDIT LOG -->
+        <div class="schema-table highlight-red">
+          <div class="table-header">
+            <div class="table-icon">🔍</div>
+            <div class="table-name">audit_logs</div>
+            <div class="table-tag tag-core">CORE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">log_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">user_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">action</span><span class="field-type">ENUM(CREATE,UPDATE,DELETE,POST,VOID)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">entity_type</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">entity_id</span><span class="field-type">UUID</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">old_value</span><span class="field-type">JSONB</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">new_value</span><span class="field-type">JSONB</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">ip_address</span><span class="field-type">INET</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">timestamp</span><span class="field-type">TIMESTAMP</span></div>
+          </div>
+        </div>
+
+        <!-- FIXED ASSETS -->
+        <div class="schema-table highlight-orange">
+          <div class="table-header">
+            <div class="table-icon">🏗️</div>
+            <div class="table-name">fixed_assets</div>
+            <div class="table-tag tag-tx">TRANSACTION</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">asset_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">asset_code</span><span class="field-type">VARCHAR(30)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">asset_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">category</span><span class="field-type">VARCHAR(100)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">acquisition_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">acquisition_cost</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">useful_life_months</span><span class="field-type">INT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">depreciation_method</span><span class="field-type">ENUM(SLM,DDB,SYD,UOP)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">salvage_value</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">book_value</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">accumulated_dep</span><span class="field-type">DECIMAL(18,4)</span></div>
+          </div>
+        </div>
+
+        <!-- INVENTORY -->
+        <div class="schema-table highlight-green">
+          <div class="table-header">
+            <div class="table-icon">📦</div>
+            <div class="table-name">inventory_items</div>
+            <div class="table-tag tag-tx">TRANSACTION</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">item_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">item_code</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">item_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">costing_method</span><span class="field-type">ENUM(FIFO,LIFO,AVG,STD)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">unit_of_measure</span><span class="field-type">VARCHAR(20)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">qty_on_hand</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">unit_cost</span><span class="field-type">DECIMAL(18,6)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">reorder_point</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">gl_account_id</span><span class="field-type">UUID FK</span></div>
+          </div>
+        </div>
+
+        <!-- BANK ACCOUNTS -->
+        <div class="schema-table highlight-cyan">
+          <div class="table-header">
+            <div class="table-icon">🏦</div>
+            <div class="table-name">bank_accounts</div>
+            <div class="table-tag tag-core">CORE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">bank_account_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">bank_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">account_number</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">iban</span><span class="field-type">VARCHAR(34)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">currency_code</span><span class="field-type">CHAR(3)</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">gl_account_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">current_balance</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">last_reconciled</span><span class="field-type">DATE</span></div>
+          </div>
+        </div>
+
+        <!-- BUDGETS -->
+        <div class="schema-table highlight-red">
+          <div class="table-header">
+            <div class="table-icon">💼</div>
+            <div class="table-name">budgets</div>
+            <div class="table-tag tag-tx">TRANSACTION</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">budget_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">period_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">account_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">cost_center_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">budget_amount</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">actual_amount</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">variance</span><span class="field-type">DECIMAL(18,4) COMPUTED</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">budget_type</span><span class="field-type">ENUM(ANNUAL,REVISED,ROLLING)</span></div>
+          </div>
+        </div>
+
+        <!-- PAYROLL -->
+        <div class="schema-table highlight-purple">
+          <div class="table-header">
+            <div class="table-icon">👥</div>
+            <div class="table-name">payroll_transactions</div>
+            <div class="table-tag tag-tx">TRANSACTION</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">payroll_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">employee_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">period_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">gross_salary</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">deductions</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">net_salary</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">tax_withheld</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">journal_entry_id</span><span class="field-type">UUID FK</span></div>
+          </div>
+        </div>
+
+        <!-- AI ANOMALY DETECTION -->
+        <div class="schema-table highlight-purple">
+          <div class="table-header">
+            <div class="table-icon">🤖</div>
+            <div class="table-name">ai_anomaly_flags</div>
+            <div class="table-tag tag-ai">AI</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">flag_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">entity_type</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">entity_id</span><span class="field-type">UUID</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">anomaly_type</span><span class="field-type">ENUM(DUPLICATE,UNUSUAL_AMT,FRAUD...)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">severity</span><span class="field-type">ENUM(LOW,MED,HIGH,CRITICAL)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">confidence_score</span><span class="field-type">DECIMAL(5,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">model_version</span><span class="field-type">VARCHAR(20)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(OPEN,REVIEWED,RESOLVED)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">detected_at</span><span class="field-type">TIMESTAMP</span></div>
+          </div>
+        </div>
+
+        <!-- INTERCOMPANY -->
+        <div class="schema-table highlight-cyan">
+          <div class="table-header">
+            <div class="table-icon">🔄</div>
+            <div class="table-name">intercompany_transactions</div>
+            <div class="table-tag tag-tx">TRANSACTION</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">interco_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">from_company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">to_company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">from_journal_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">to_journal_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">amount</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">currency_code</span><span class="field-type">CHAR(3)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">elimination_status</span><span class="field-type">ENUM(PENDING,ELIMINATED)</span></div>
+          </div>
+        </div>
+
+        <!-- ── NEW PORTAL SCHEMA TABLES ── -->
+
+        <!-- CRM: LEADS -->
+        <div class="schema-table highlight-orange">
+          <div class="table-header">
+            <div class="table-icon">🎯</div>
+            <div class="table-name">leads</div>
+            <div class="table-tag tag-tx">CRM</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">lead_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">company_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">contact_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">email</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">phone</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">source</span><span class="field-type">ENUM(WEB,REFERRAL,COLD,EVENT)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(NEW,CONTACTED,QUALIFIED,LOST)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">estimated_value</span><span class="field-type">DECIMAL(18,4)</span></div>
+          </div>
+        </div>
+
+        <!-- CRM: OPPORTUNITIES -->
+        <div class="schema-table highlight-orange">
+          <div class="table-header">
+            <div class="table-icon">📈</div>
+            <div class="table-name">opportunities</div>
+            <div class="table-tag tag-tx">CRM</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">opportunity_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">lead_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">opportunity_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">stage</span><span class="field-type">ENUM(PROSPECT,NEGOTIATION,CLOSED_WON,LOST)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">amount</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">probability</span><span class="field-type">INT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">expected_close_date</span><span class="field-type">DATE</span></div>
+          </div>
+        </div>
+
+        <!-- CRM: QUOTATIONS -->
+        <div class="schema-table highlight-orange">
+          <div class="table-header">
+            <div class="table-icon">📄</div>
+            <div class="table-name">quotations</div>
+            <div class="table-tag tag-tx">CRM</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">quotation_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">opportunity_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">quotation_number</span><span class="field-type">VARCHAR(30)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">valid_until</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">total_amount</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(DRAFT,SENT,ACCEPTED,REJECTED)</span></div>
+          </div>
+        </div>
+
+        <!-- MANUFACTURING: BOMS -->
+        <div class="schema-table highlight-orange">
+          <div class="table-header">
+            <div class="table-icon">🔩</div>
+            <div class="table-name">manufacturing_boms</div>
+            <div class="table-tag tag-tx">MFG</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">bom_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">item_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">bom_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">bom_type</span><span class="field-type">ENUM(MANUFACTURING,ENGINEERING)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">quantity</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(ACTIVE,INACTIVE,OBSOLETE)</span></div>
+          </div>
+        </div>
+
+        <!-- MANUFACTURING: WORK CENTERS -->
+        <div class="schema-table highlight-orange">
+          <div class="table-header">
+            <div class="table-icon">🏭</div>
+            <div class="table-name">work_centers</div>
+            <div class="table-tag tag-tx">MFG</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">work_center_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">code</span><span class="field-type">VARCHAR(20)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">capacity_per_shift</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">efficiency_rate</span><span class="field-type">DECIMAL(5,2)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(ACTIVE,IDLE,MAINTENANCE)</span></div>
+          </div>
+        </div>
+
+        <!-- MANUFACTURING: PRODUCTION ORDERS -->
+        <div class="schema-table highlight-orange">
+          <div class="table-header">
+            <div class="table-icon">⚙️</div>
+            <div class="table-name">production_orders</div>
+            <div class="table-tag tag-tx">MFG</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">order_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">bom_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">work_center_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">order_number</span><span class="field-type">VARCHAR(30)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">quantity</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(PLANNED,IN_PROGRESS,COMPLETED,CANCELLED)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">due_date</span><span class="field-type">DATE</span></div>
+          </div>
+        </div>
+
+        <!-- PROJECT ACCOUNTING: PROJECTS -->
+        <div class="schema-table highlight-purple">
+          <div class="table-header">
+            <div class="table-icon">📋</div>
+            <div class="table-name">projects</div>
+            <div class="table-tag tag-tx">PROJ</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">project_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">company_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">project_code</span><span class="field-type">VARCHAR(30)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">project_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">budget_amount</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(PLANNED,ACTIVE,ON_HOLD,COMPLETED)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">start_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">end_date</span><span class="field-type">DATE</span></div>
+          </div>
+        </div>
+
+        <!-- PROJECT ACCOUNTING: TASKS -->
+        <div class="schema-table highlight-purple">
+          <div class="table-header">
+            <div class="table-icon">✅</div>
+            <div class="table-name">tasks</div>
+            <div class="table-tag tag-tx">PROJ</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">task_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">project_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">task_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">assigned_to</span><span class="field-type">UUID FK → employees</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">estimated_hours</span><span class="field-type">DECIMAL(8,2)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(TODO,IN_PROGRESS,REVIEW,DONE)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">priority</span><span class="field-type">ENUM(LOW,MED,HIGH,CRITICAL)</span></div>
+          </div>
+        </div>
+
+        <!-- PROJECT ACCOUNTING: TIME LOGS -->
+        <div class="schema-table highlight-purple">
+          <div class="table-header">
+            <div class="table-icon">⏱️</div>
+            <div class="table-name">time_logs</div>
+            <div class="table-tag tag-tx">PROJ</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">log_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">task_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">employee_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">hours_logged</span><span class="field-type">DECIMAL(6,2)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">log_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">description</span><span class="field-type">TEXT</span></div>
+          </div>
+        </div>
+
+        <!-- E-COMMERCE: WISHLIST -->
+        <div class="schema-table highlight-cyan">
+          <div class="table-header">
+            <div class="table-icon">⭐</div>
+            <div class="table-name">wishlist</div>
+            <div class="table-tag tag-tx">STORE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">wishlist_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">customer_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">item_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">added_at</span><span class="field-type">TIMESTAMP</span></div>
+          </div>
+        </div>
+
+        <!-- E-COMMERCE: COUPONS -->
+        <div class="schema-table highlight-cyan">
+          <div class="table-header">
+            <div class="table-icon">🏷️</div>
+            <div class="table-name">coupons</div>
+            <div class="table-tag tag-tx">STORE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">coupon_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">code</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">discount_type</span><span class="field-type">ENUM(PERCENTAGE,FIXED)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">discount_value</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">usage_limit</span><span class="field-type">INT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">valid_from</span><span class="field-type">TIMESTAMP</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">valid_until</span><span class="field-type">TIMESTAMP</span></div>
+          </div>
+        </div>
+
+        <!-- E-COMMERCE: REVIEWS -->
+        <div class="schema-table highlight-cyan">
+          <div class="table-header">
+            <div class="table-icon">💬</div>
+            <div class="table-name">reviews</div>
+            <div class="table-tag tag-tx">STORE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">review_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">customer_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">item_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">rating</span><span class="field-type">INT CHECK(1-5)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">title</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">comment</span><span class="field-type">TEXT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">is_verified</span><span class="field-type">BOOLEAN</span></div>
+          </div>
+        </div>
+
+        <!-- SUPPLIER PORTAL: SUPPLIER CATALOG -->
+        <div class="schema-table highlight-red">
+          <div class="table-header">
+            <div class="table-icon">📦</div>
+            <div class="table-name">supplier_catalog_items</div>
+            <div class="table-tag tag-tx">SUPP</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">catalog_item_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">vendor_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">item_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">unit_price</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">currency</span><span class="field-type">CHAR(3)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">min_order_qty</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">lead_time_days</span><span class="field-type">INT</span></div>
+          </div>
+        </div>
+
+        <!-- SUPPLIER PORTAL: PO CONFIRMATIONS -->
+        <div class="schema-table highlight-red">
+          <div class="table-header">
+            <div class="table-icon">✅</div>
+            <div class="table-name">supplier_po_confirmations</div>
+            <div class="table-tag tag-tx">SUPP</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">confirmation_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">po_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">vendor_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(CONFIRMED,REJECTED,ACKNOWLEDGED)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">notes</span><span class="field-type">TEXT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">confirmed_delivery_date</span><span class="field-type">DATE</span></div>
+          </div>
+        </div>
+
+        <!-- HR: LEAVE REQUESTS -->
+        <div class="schema-table highlight-purple">
+          <div class="table-header">
+            <div class="table-icon">🏖️</div>
+            <div class="table-name">leave_requests</div>
+            <div class="table-tag tag-tx">HR</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">leave_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">employee_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">leave_type</span><span class="field-type">ENUM(ANNUAL,SICK,PERSONAL,MATERNITY)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">start_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">end_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(PENDING,APPROVED,REJECTED)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">reason</span><span class="field-type">TEXT</span></div>
+          </div>
+        </div>
+
+        <!-- HR: PAYSLIPS -->
+        <div class="schema-table highlight-purple">
+          <div class="table-header">
+            <div class="table-icon">🧾</div>
+            <div class="table-name">payslips</div>
+            <div class="table-tag tag-tx">HR</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">payslip_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">employee_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">period_start</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">period_end</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">gross_pay</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">deductions</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">net_pay</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(DRAFT,FINAL,PAID)</span></div>
+          </div>
+        </div>
+
+        <!-- DOCUMENT MANAGEMENT -->
+        <div class="schema-table highlight-green">
+          <div class="table-header">
+            <div class="table-icon">📄</div>
+            <div class="table-name">documents</div>
+            <div class="table-tag tag-tx">DOC</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">document_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">category_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">title</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">file_path</span><span class="field-type">VARCHAR(500)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">file_type</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">file_size</span><span class="field-type">BIGINT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(DRAFT,PENDING_REVIEW,APPROVED,REJECTED)</span></div>
+          </div>
+        </div>
+
+        <!-- DOCUMENT MANAGEMENT: VERSIONS -->
+        <div class="schema-table highlight-green">
+          <div class="table-header">
+            <div class="table-icon">🔄</div>
+            <div class="table-name">document_versions</div>
+            <div class="table-tag tag-tx">DOC</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">version_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">document_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">version_number</span><span class="field-type">INT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">file_path</span><span class="field-type">VARCHAR(500)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">change_notes</span><span class="field-type">TEXT</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">uploaded_by</span><span class="field-type">UUID FK → users</span></div>
+          </div>
+        </div>
+
+        <!-- COLLABORATION: MESSAGES -->
+        <div class="schema-table highlight-cyan">
+          <div class="table-header">
+            <div class="table-icon">💬</div>
+            <div class="table-name">collaboration_messages</div>
+            <div class="table-tag tag-tx">COLLAB</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">message_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">user_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">channel</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">content</span><span class="field-type">TEXT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">message_type</span><span class="field-type">ENUM(TEXT,SYSTEM,IMAGE,FILE)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">created_at</span><span class="field-type">TIMESTAMP</span></div>
+          </div>
+        </div>
+
+        <!-- COLLABORATION: NOTIFICATIONS -->
+        <div class="schema-table highlight-cyan">
+          <div class="table-header">
+            <div class="table-icon">🔔</div>
+            <div class="table-name">notifications</div>
+            <div class="table-tag tag-tx">COLLAB</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">notification_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">user_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">type</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">title</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">body</span><span class="field-type">TEXT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">is_read</span><span class="field-type">BOOLEAN</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">created_at</span><span class="field-type">TIMESTAMP</span></div>
+          </div>
+        </div>
+
+        <!-- TRACEABILITY: LOT HEADERS -->
+        <div class="schema-table highlight-orange">
+          <div class="table-header">
+            <div class="table-icon">🔍</div>
+            <div class="table-name">lot_headers</div>
+            <div class="table-tag tag-tx">TRACE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">lot_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">item_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">lot_number</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">quantity</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">manufacturing_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">expiry_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(ACTIVE,QUARANTINE,CLOSED,EXPIRED)</span></div>
+          </div>
+        </div>
+
+        <!-- TRACEABILITY: SERIAL NUMBERS -->
+        <div class="schema-table highlight-orange">
+          <div class="table-header">
+            <div class="table-icon">🔢</div>
+            <div class="table-name">serial_numbers</div>
+            <div class="table-tag tag-tx">TRACE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">serial_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">item_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">serial_number</span><span class="field-type">VARCHAR(100)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(ACTIVE,SOLD,RETIRED,SCRAPPED)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">warranty_until</span><span class="field-type">DATE</span></div>
+          </div>
+        </div>
+
+        <!-- TRACEABILITY: MOVEMENTS -->
+        <div class="schema-table highlight-orange">
+          <div class="table-header">
+            <div class="table-icon">↔️</div>
+            <div class="table-name">traceability_movements</div>
+            <div class="table-tag tag-tx">TRACE</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">movement_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">direction</span><span class="field-type">ENUM(UPSTREAM,DOWNSTREAM)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">event_type</span><span class="field-type">ENUM(RECEIVE,ISSUE,TRANSFER,RETURN)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">reference_type</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">reference_id</span><span class="field-type">UUID</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">quantity</span><span class="field-type">DECIMAL(18,4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">moved_at</span><span class="field-type">TIMESTAMP</span></div>
+          </div>
+        </div>
+
+        <!-- INVENTORY MASTER DATA: CATEGORIES -->
+        <div class="schema-table highlight-gold">
+          <div class="table-header">
+            <div class="table-icon">📂</div>
+            <div class="table-name">item_categories</div>
+            <div class="table-tag tag-ref">REF</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">category_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">parent_category_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">category_name</span><span class="field-type">VARCHAR(255)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">category_code</span><span class="field-type">VARCHAR(20)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">description</span><span class="field-type">TEXT</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">is_active</span><span class="field-type">BOOLEAN</span></div>
+          </div>
+        </div>
+
+        <!-- INVENTORY MASTER DATA: UOM -->
+        <div class="schema-table highlight-gold">
+          <div class="table-header">
+            <div class="table-icon">⚖️</div>
+            <div class="table-name">uom</div>
+            <div class="table-tag tag-ref">REF</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">uom_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">uom_code</span><span class="field-type">VARCHAR(10)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">uom_name</span><span class="field-type">VARCHAR(100)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">category</span><span class="field-type">ENUM(UNIT,WEIGHT,VOLUME,LENGTH)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">is_active</span><span class="field-type">BOOLEAN</span></div>
+          </div>
+        </div>
+
+        <!-- INVENTORY MASTER DATA: TAGS -->
+        <div class="schema-table highlight-gold">
+          <div class="table-header">
+            <div class="table-icon">🏷️</div>
+            <div class="table-name">item_tags</div>
+            <div class="table-tag tag-ref">REF</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">tag_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">tag_name</span><span class="field-type">VARCHAR(100)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">color</span><span class="field-type">VARCHAR(7)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">is_active</span><span class="field-type">BOOLEAN</span></div>
+          </div>
+        </div>
+
+        <!-- EDI: CERTIFICATES -->
+        <div class="schema-table highlight-red">
+          <div class="table-header">
+            <div class="table-icon">🔐</div>
+            <div class="table-name">edi_certificates</div>
+            <div class="table-tag tag-tx">EDI</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">certificate_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">alias</span><span class="field-type">VARCHAR(100)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">certificate_type</span><span class="field-type">ENUM(SIGNING,ENCRYPTION,TRANSPORT)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">serial_number</span><span class="field-type">VARCHAR(100)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">valid_from</span><span class="field-type">TIMESTAMP</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">valid_until</span><span class="field-type">TIMESTAMP</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">is_active</span><span class="field-type">BOOLEAN</span></div>
+          </div>
+        </div>
+
+        <!-- EDI: SMP CACHE -->
+        <div class="schema-table highlight-red">
+          <div class="table-header">
+            <div class="table-icon">🌐</div>
+            <div class="table-name">edi_smp_cache</div>
+            <div class="table-tag tag-tx">EDI</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">cache_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">participant_id</span><span class="field-type">VARCHAR(100)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">document_type</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">endpoint_url</span><span class="field-type">VARCHAR(500)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">transport_profile</span><span class="field-type">ENUM(AS2,AS4)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">last_queried</span><span class="field-type">TIMESTAMP</span></div>
+          </div>
+        </div>
+
+        <!-- EDI: ACKNOWLEDGMENTS -->
+        <div class="schema-table highlight-red">
+          <div class="table-header">
+            <div class="table-icon">📨</div>
+            <div class="table-name">edi_acknowledgments</div>
+            <div class="table-tag tag-tx">EDI</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">ack_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">document_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">ack_type</span><span class="field-type">ENUM(MDN,APERAK,MLC)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(RECEIVED,ACCEPTED,REJECTED)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">received_at</span><span class="field-type">TIMESTAMP</span></div>
+          </div>
+        </div>
+
+        <!-- API DEVELOPER PORTAL -->
+        <div class="schema-table highlight-cyan">
+          <div class="table-header">
+            <div class="table-icon">🔌</div>
+            <div class="table-name">api_keys</div>
+            <div class="table-tag tag-core">DEV</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">key_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">user_id</span><span class="field-type">UUID FK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">key_name</span><span class="field-type">VARCHAR(100)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">key_prefix</span><span class="field-type">VARCHAR(10)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">scopes</span><span class="field-type">JSONB</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">expires_at</span><span class="field-type">TIMESTAMP</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">is_active</span><span class="field-type">BOOLEAN</span></div>
+          </div>
+        </div>
+
+        <!-- API VERSIONS -->
+        <div class="schema-table highlight-cyan">
+          <div class="table-header">
+            <div class="table-icon">📌</div>
+            <div class="table-name">api_versions</div>
+            <div class="table-tag tag-core">DEV</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">version_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">version</span><span class="field-type">VARCHAR(20)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">status</span><span class="field-type">ENUM(CURRENT,DEPRECATED,SUNSET)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">deprecation_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">sunset_date</span><span class="field-type">DATE</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">changelog</span><span class="field-type">TEXT</span></div>
+          </div>
+        </div>
+
+        <!-- SYSTEM: LOCKS -->
+        <div class="schema-table highlight-red">
+          <div class="table-header">
+            <div class="table-icon">🔒</div>
+            <div class="table-name">locks</div>
+            <div class="table-tag tag-core">SYS</div>
+          </div>
+          <div class="field-list">
+            <div class="field-row"><div class="pk-dot"></div><span class="field-name">lock_id</span><span class="field-type">UUID PK</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">entity_type</span><span class="field-type">VARCHAR(50)</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">entity_id</span><span class="field-type">UUID</span></div>
+            <div class="field-row"><div class="fk-dot"></div><span class="field-name">locked_by</span><span class="field-type">UUID FK → users</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">locked_at</span><span class="field-type">TIMESTAMP</span></div>
+            <div class="field-row"><div class="reg-dot"></div><span class="field-name">expires_at</span><span class="field-type">TIMESTAMP</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MASTER DATA -->
+  <div class="fade-in">
+    <div class="section-label"><span class="num">04</span> Master Data Configuration</div>
+    <div class="master-panel">
+      <div class="master-title">MASTER DATA</div>
+      <div class="master-items">
+        <div class="master-item">Companies & Branches</div>
+        <div class="master-item">Chart of Accounts</div>
+        <div class="master-item">Accounting Periods</div>
+        <div class="master-item">Cost Centers</div>
+        <div class="master-item">Currency Exchange Rates</div>
+        <div class="master-item">Employee Master</div>
+        <div class="master-item">Vendor Master</div>
+        <div class="master-item">Customer Master</div>
+        <div class="master-item">Product / Item Master</div>
+        <div class="master-item">Asset Categories</div>
+        <div class="master-item">Tax Codes</div>
+        <div class="master-item">Bank Accounts</div>
+        <div class="master-item">Posting Rules Engine</div>
+        <div class="master-item">Budget Templates</div>
+        <div class="master-item">GL Mapping Config</div>
+        <div class="master-item">RBAC Roles & Permissions</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE CARDS -->
+  <div class="fade-in modules-section">
+    <div class="section-label"><span class="num">05</span> Business Modules</div>
+    <div class="modules-grid">
+
+      <div class="module-card mc-sales">
+        <div class="module-icon">🛒</div>
+        <div class="module-title">Sales & AR</div>
+        <div class="module-desc">Manages the full order-to-cash cycle. Sales orders trigger automatic GL postings through the event bus via posting rules, eliminating manual entry.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Sales Orders</li>
+          <li class="feature-chip">Invoicing</li>
+          <li class="feature-chip">AR Aging</li>
+          <li class="feature-chip">Credit Control</li>
+          <li class="feature-chip">Revenue Recognition</li>
+        </ul>
+      </div>
+
+      <div class="module-card mc-procurement">
+        <div class="module-icon">🔧</div>
+        <div class="module-title">Procurement & AP</div>
+        <div class="module-desc">Purchase order lifecycle from requisition through 3-way matching. Auto-posts AP entries when goods receipts and invoices are matched.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Purchase Orders</li>
+          <li class="feature-chip">GRN Matching</li>
+          <li class="feature-chip">AP Aging</li>
+          <li class="feature-chip">Vendor Payments</li>
+          <li class="feature-chip">Materials Planning</li>
+        </ul>
+      </div>
+
+      <div class="module-card mc-inventory">
+        <div class="module-icon">📦</div>
+        <div class="module-title">Inventory</div>
+        <div class="module-desc">Multi-method costing engine supporting FIFO, LIFO, and Weighted Average. All stock movements auto-generate COGS and inventory GL entries.</div>
+        <ul class="module-features">
+          <li class="feature-chip">FIFO / LIFO / AVG</li>
+          <li class="feature-chip">Stock Transfers</li>
+          <li class="feature-chip">Stock Valuation</li>
+          <li class="feature-chip">Reorder Alerts</li>
+          <li class="feature-chip">Write-offs</li>
+        </ul>
+      </div>
+
+      <div class="module-card mc-payroll">
+        <div class="module-icon">👥</div>
+        <div class="module-title">HR & Payroll</div>
+        <div class="module-desc">Full payroll processing with tax computation, deduction management, and auto-posting to salary expense and liability accounts per period.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Employee Master</li>
+          <li class="feature-chip">Payroll Engine</li>
+          <li class="feature-chip">Tax Withholding</li>
+          <li class="feature-chip">Time & Attendance</li>
+          <li class="feature-chip">Expense Claims</li>
+        </ul>
+      </div>
+
+      <div class="module-card mc-assets">
+        <div class="module-icon">🏗️</div>
+        <div class="module-title">Fixed Assets</div>
+        <div class="module-desc">Asset lifecycle management with automated depreciation posting. Supports SLM, DDB, SYD methods. Generates depreciation schedules and disposal entries.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Asset Register</li>
+          <li class="feature-chip">Auto Depreciation</li>
+          <li class="feature-chip">Disposals</li>
+          <li class="feature-chip">Revaluation</li>
+          <li class="feature-chip">Impairment</li>
+        </ul>
+      </div>
+
+      <div class="module-card mc-banking">
+        <div class="module-icon">🏦</div>
+        <div class="module-title">Banking & Cash</div>
+        <div class="module-desc">Multi-bank, multi-currency account management with automated bank reconciliation. Matches bank statement lines to GL entries using AI-assisted matching.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Bank Reconciliation</li>
+          <li class="feature-chip">Multi-Currency</li>
+          <li class="feature-chip">Payments</li>
+          <li class="feature-chip">Receipts</li>
+          <li class="feature-chip">Cash Pooling</li>
+        </ul>
+      </div>
+
+      <div class="module-card mc-budget">
+        <div class="module-icon">💼</div>
+        <div class="module-title">Budget Control</div>
+        <div class="module-desc">Real-time budget vs actual monitoring with variance alerts. Supports annual, revised, and rolling budgets at account and cost center level.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Budget Planning</li>
+          <li class="feature-chip">Budget vs Actual</li>
+          <li class="feature-chip">Variance Analysis</li>
+          <li class="feature-chip">Rolling Forecast</li>
+          <li class="feature-chip">AI Prediction</li>
+        </ul>
+      </div>
+
+      <div class="module-card mc-core">
+        <div class="module-icon">⬡</div>
+        <div class="module-title">General Ledger</div>
+        <div class="module-desc">The single source of financial truth. Consolidates all module postings, maintains period balances, handles intercompany eliminations and multi-currency translation.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Period Close</li>
+          <li class="feature-chip">Consolidation</li>
+          <li class="feature-chip">FX Translation</li>
+          <li class="feature-chip">Interco Elimination</li>
+          <li class="feature-chip">Reversal Entries</li>
+        </ul>
+      </div>
+
+      <!-- NEW MODULE CARDS: PORTALS & EXTENSIONS -->
+
+      <div class="module-card" style="--accent:#ff6b2b;">
+        <div class="module-icon">🏭</div>
+        <div class="module-title">Manufacturing & BOM</div>
+        <div class="module-desc">Bill of Materials management, production order lifecycle, work center scheduling, and production KPI dashboards. Integrates with inventory for material consumption and GL for cost postings.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Bill of Materials</li>
+          <li class="feature-chip">Production Orders</li>
+          <li class="feature-chip">Work Centers</li>
+          <li class="feature-chip">Material Requirements</li>
+          <li class="feature-chip">OEE Tracking</li>
+        </ul>
+      </div>
+
+      <div class="module-card" style="--accent:#00bcd4;">
+        <div class="module-icon">🎯</div>
+        <div class="module-title">CRM & Sales Pipeline</div>
+        <div class="module-desc">Full lead-to-quote lifecycle with opportunity tracking, Kanban stage transitions, contact management, and pipeline analytics. Auto-converts won opportunities to sales orders.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Lead Management</li>
+          <li class="feature-chip">Opportunity Kanban</li>
+          <li class="feature-chip">Quotations</li>
+          <li class="feature-chip">Pipeline Analytics</li>
+          <li class="feature-chip">Contact Management</li>
+        </ul>
+      </div>
+
+      <div class="module-card" style="--accent:#9c6cff;">
+        <div class="module-icon">🏪</div>
+        <div class="module-title">E-commerce Storefront</div>
+        <div class="module-desc">Customer-facing online store with product catalog, shopping cart, checkout with shipping & tax calculation, coupon engine, wishlist, reviews, and order tracking.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Product Catalog</li>
+          <li class="feature-chip">Cart & Checkout</li>
+          <li class="feature-chip">Coupon Engine</li>
+          <li class="feature-chip">Customer Accounts</li>
+          <li class="feature-chip">Order Returns</li>
+        </ul>
+      </div>
+
+      <div class="module-card" style="--accent:#ff3d57;">
+        <div class="module-icon">🤝</div>
+        <div class="module-title">Supplier Portal</div>
+        <div class="module-desc">Vendor-facing self-service portal for PO confirmation, invoice submission, catalog management, document upload, payment status tracking, and activity logging.</div>
+        <ul class="module-features">
+          <li class="feature-chip">PO Confirmation</li>
+          <li class="feature-chip">Invoice Submission</li>
+          <li class="feature-chip">Vendor Catalog</li>
+          <li class="feature-chip">Document Upload</li>
+          <li class="feature-chip">Payment Tracking</li>
+        </ul>
+      </div>
+
+      <div class="module-card" style="--accent:#00e676;">
+        <div class="module-icon">👥</div>
+        <div class="module-title">HR Self-Service Portal</div>
+        <div class="module-desc">Employee self-service for payslip viewing, leave requests with balance tracking, expense claims submission, and approval inbox. Integrated with payroll engine.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Payslip Viewer</li>
+          <li class="feature-chip">Leave Requests</li>
+          <li class="feature-chip">Expense Claims</li>
+          <li class="feature-chip">Approval Inbox</li>
+          <li class="feature-chip">Balance Tracking</li>
+        </ul>
+      </div>
+
+      <div class="module-card" style="--accent:#f0a500;">
+        <div class="module-icon">📋</div>
+        <div class="module-title">Project Accounting</div>
+        <div class="module-desc">Project lifecycle management with task Kanban boards, time tracking, budget vs actual P&L, and project-level approvals. Auto-posts project costs to GL.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Project CRUD</li>
+          <li class="feature-chip">Task Kanban Board</li>
+          <li class="feature-chip">Time Tracking</li>
+          <li class="feature-chip">Project P&amp;L</li>
+          <li class="feature-chip">Approval Workflow</li>
+        </ul>
+      </div>
+
+      <div class="module-card" style="--accent:#00d4ff;">
+        <div class="module-icon">📄</div>
+        <div class="module-title">Document Management</div>
+        <div class="module-desc">Centralized document repository with category tree, version control, review workflow with submit/approve/reject, activity audit log, and file upload/download.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Document Repository</li>
+          <li class="feature-chip">Version Control</li>
+          <li class="feature-chip">Review Workflow</li>
+          <li class="feature-chip">Category Tree</li>
+          <li class="feature-chip">Audit Logging</li>
+        </ul>
+      </div>
+
+      <div class="module-card" style="--accent:#9c6cff;">
+        <div class="module-icon">💬</div>
+        <div class="module-title">Real-time Collaboration</div>
+        <div class="module-desc">Team chat rooms, activity feed, push notifications via Web Push API, online presence tracking, offline message queue replay, and Socket.IO event bus.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Team Chat</li>
+          <li class="feature-chip">Push Notifications</li>
+          <li class="feature-chip">Online Presence</li>
+          <li class="feature-chip">Activity Feed</li>
+          <li class="feature-chip">Offline Sync</li>
+        </ul>
+      </div>
+
+      <div class="module-card" style="--accent:#ff6b2b;">
+        <div class="module-icon">🔍</div>
+        <div class="module-title">Lot / Serial Traceability</div>
+        <div class="module-desc">Full upstream/downstream traceability for lot and serial numbered items. Supports reservations, movement logging, expiry tracking, and recall management.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Lot Tracking</li>
+          <li class="feature-chip">Serial Numbers</li>
+          <li class="feature-chip">Trace Movements</li>
+          <li class="feature-chip">Reservations</li>
+          <li class="feature-chip">Recall Management</li>
+        </ul>
+      </div>
+
+      <div class="module-card" style="--accent:#00e676;">
+        <div class="module-icon">📊</div>
+        <div class="module-title">Inventory Master Data</div>
+        <div class="module-desc">Hierarchical item categories, unit of measure management with conversion rules, and flexible item tagging. Extends item master with brand, GTIN, UPC, and HS codes.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Category Tree</li>
+          <li class="feature-chip">UOM &amp; Conversions</li>
+          <li class="feature-chip">Item Tags</li>
+          <li class="feature-chip">GTIN / UPC</li>
+          <li class="feature-chip">HS Codes</li>
+        </ul>
+      </div>
+
+      <div class="module-card" style="--accent:#ff3d57;">
+        <div class="module-icon">🔌</div>
+        <div class="module-title">API Developer Portal</div>
+        <div class="module-desc">Interactive Swagger UI documentation, API key management with scoped access, version lifecycle tracking with deprecation/sunset dates, and version negotiation middleware.</div>
+        <ul class="module-features">
+          <li class="feature-chip">Swagger UI Docs</li>
+          <li class="feature-chip">API Key Management</li>
+          <li class="feature-chip">Version Lifecycle</li>
+          <li class="feature-chip">Scope-Based Access</li>
+          <li class="feature-chip">Version Negotiation</li>
+        </ul>
+      </div>
+
+      <div class="module-card" style="--accent:#00bcd4;">
+        <div class="module-icon">📨</div>
+        <div class="module-title">EDI / Electronic Invoicing</div>
+        <div class="module-desc">PEPPOL BIS 3.0 compliant e-invoicing with AS2/AS4 transport, XAdES-BES digital signing, SMP discovery, MDN/APERAK/MLC acknowledgment handling, and buy-side 3-way matching.</div>
+        <ul class="module-features">
+          <li class="feature-chip">PEPPOL BIS 3.0</li>
+          <li class="feature-chip">AS2 / AS4 Transport</li>
+          <li class="feature-chip">Digital Signing</li>
+          <li class="feature-chip">SMP Discovery</li>
+          <li class="feature-chip">3-Way Matching</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AI LAYER -->
+  <div class="fade-in">
+    <div class="section-label"><span class="num">06</span> AI Intelligence Layer</div>
+    <div class="ai-panel">
+      <div class="ai-grid">
+        <div class="ai-feature">
+          <div class="ai-feature-name">🔍 Anomaly Detection</div>
+          <div class="ai-feature-desc">ML model flags unusual transaction patterns, duplicate postings, and statistical outliers in real-time.</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-name">🛡️ Fraud Analysis</div>
+          <div class="ai-feature-desc">Behavioral scoring on journal entries, vendor payments, and employee expense patterns using ensemble classifiers.</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-name">📈 Financial Forecasting</div>
+          <div class="ai-feature-desc">Time-series models predict P&L, cash flow, and balance sheet positions 3-12 months forward.</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-name">💰 Budget Prediction</div>
+          <div class="ai-feature-desc">Suggests budget allocations based on historical spend patterns, seasonality, and business plan inputs.</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-name">🔗 Smart Reconciliation</div>
+          <div class="ai-feature-desc">AI-assisted bank statement matching with confidence scoring for ambiguous transactions.</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-name">📊 KPI Intelligence</div>
+          <div class="ai-feature-desc">Auto-generates narrative insights explaining KPI movements, comparing actuals to benchmarks.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFRASTRUCTURE -->
+  <div class="fade-in">
+    <div class="section-label"><span class="num">07</span> Infrastructure Layer</div>
+    <div class="infra-strip">
+      <div class="infra-node">📨 Message Queue</div>
+      <div class="infra-node">⚡ Redis Cache</div>
+      <div class="infra-node">📄 Document Store</div>
+      <div class="infra-node">🔄 ETL Pipeline</div>
+      <div class="infra-node">🗄️ Data Warehouse</div>
+      <div class="infra-node">📡 Event Stream (Kafka)</div>
+      <div class="infra-node">🔐 Secrets Manager</div>
+      <div class="infra-node">☁️ Object Storage</div>
+    </div>
+  </div>
+
+  <!-- PORTAL ECOSYSTEM -->
+  <div class="fade-in">
+    <div class="section-label"><span class="num">08</span> Portal Ecosystem Architecture</div>
+    <div class="portal-ecosystem">
+
+      <div class="portal-card pc-crm">
+        <div class="portal-card-header">
+          <div class="portal-card-icon">🎯</div>
+          <div class="portal-card-title">CRM & Sales Pipeline</div>
+          <span class="portal-badge pb-internal" style="margin-left:auto;">INTERNAL</span>
+        </div>
+        <div class="portal-card-desc">Lead-to-quote lifecycle with Kanban opportunity tracking, quotation generation, and pipeline analytics. Routes: /crm/leads, /crm/opportunities, /crm/quotes, /crm/dashboard</div>
+        <div class="portal-card-routes">
+          <span class="portal-route">/crm/leads</span>
+          <span class="portal-route">/crm/opportunities</span>
+          <span class="portal-route">/crm/quotes</span>
+          <span class="portal-route">/crm/dashboard</span>
+        </div>
+        <div class="portal-card-footer"><span>Schema: sfas_sales (6 tables)</span><span>5 enums · 28 controllers</span></div>
+      </div>
+
+      <div class="portal-card pc-mfg">
+        <div class="portal-card-header">
+          <div class="portal-card-icon">🏭</div>
+          <div class="portal-card-title">Manufacturing & BOM</div>
+          <span class="portal-badge pb-internal" style="margin-left:auto;">INTERNAL</span>
+        </div>
+        <div class="portal-card-desc">BOM management, production orders, work center scheduling, OEE dashboards, and MRP reports. Integrates with inventory and GL. Routes: /manufacturing/*</div>
+        <div class="portal-card-routes">
+          <span class="portal-route">/manufacturing/boms</span>
+          <span class="portal-route">/manufacturing/production-orders</span>
+          <span class="portal-route">/manufacturing/work-centers</span>
+          <span class="portal-route">/manufacturing/dashboard</span>
+        </div>
+        <div class="portal-card-footer"><span>Schema: sfas_manufacturing (7 tables)</span><span>3 enums · 27 routes</span></div>
+      </div>
+
+      <div class="portal-card pc-storefront">
+        <div class="portal-card-header">
+          <div class="portal-card-icon">🏪</div>
+          <div class="portal-card-title">E-commerce Storefront</div>
+          <span class="portal-badge pb-external" style="margin-left:auto;">CUSTOMER</span>
+        </div>
+        <div class="portal-card-desc">Customer-facing online store with full catalog browsing, cart management, checkout with shipping/tax/coupons, wishlist, reviews, and order history.</div>
+        <div class="portal-card-routes">
+          <span class="portal-route">/store</span>
+          <span class="portal-route">/store/catalog</span>
+          <span class="portal-route">/store/cart</span>
+          <span class="portal-route">/store/checkout</span>
+        </div>
+        <div class="portal-card-footer"><span>Schema: sfas_storefront (11 tables)</span><span>25+ controllers · 30 routes</span></div>
+      </div>
+
+      <div class="portal-card pc-supplier">
+        <div class="portal-card-header">
+          <div class="portal-card-icon">🤝</div>
+          <div class="portal-card-title">Supplier / Vendor Portal</div>
+          <span class="portal-badge pb-external" style="margin-left:auto;">VENDOR</span>
+        </div>
+        <div class="portal-card-desc">Vendor self-service for PO confirmations, invoice submissions, catalog management, document uploads, payment tracking, and activity audit log.</div>
+        <div class="portal-card-routes">
+          <span class="portal-route">/supplier/dashboard</span>
+          <span class="portal-route">/supplier/purchase-orders</span>
+          <span class="portal-route">/supplier/invoices</span>
+          <span class="portal-route">/supplier/catalog</span>
+        </div>
+        <div class="portal-card-footer"><span>Schema: sfas_supplier (5 tables)</span><span>20+ controllers · 17 routes</span></div>
+      </div>
+
+      <div class="portal-card pc-hr">
+        <div class="portal-card-header">
+          <div class="portal-card-icon">👥</div>
+          <div class="portal-card-title">HR Self-Service Portal</div>
+          <span class="portal-badge pb-hybrid" style="margin-left:auto;">HYBRID</span>
+        </div>
+        <div class="portal-card-desc">Employee payslip viewer, leave request with balance tracking, expense claims, approval inbox. Routes: /hr/portal with 5 tabs.</div>
+        <div class="portal-card-routes">
+          <span class="portal-route">/hr/portal</span>
+          <span class="portal-route">Payslips</span>
+          <span class="portal-route">Leave</span>
+          <span class="portal-route">Expenses</span>
+        </div>
+        <div class="portal-card-footer"><span>Schema: sfas_payroll (4 tables)</span><span>25+ controllers · 15 routes</span></div>
+      </div>
+
+      <div class="portal-card pc-projects">
+        <div class="portal-card-header">
+          <div class="portal-card-icon">📋</div>
+          <div class="portal-card-title">Project Accounting</div>
+          <span class="portal-badge pb-internal" style="margin-left:auto;">INTERNAL</span>
+        </div>
+        <div class="portal-card-desc">Project lifecycle with task Kanban, time tracking, budget vs actual P&L, and approvals. Routes: /projects/portal with 5 tabs.</div>
+        <div class="portal-card-routes">
+          <span class="portal-route">/projects/portal</span>
+          <span class="portal-route">Tasks/Kanban</span>
+          <span class="portal-route">Time Tracking</span>
+          <span class="portal-route">P&amp;L</span>
+        </div>
+        <div class="portal-card-footer"><span>Schema: sfas_projects (3 tables)</span><span>18 controllers · 18 routes</span></div>
+      </div>
+
+      <div class="portal-card pc-edi">
+        <div class="portal-card-header">
+          <div class="portal-card-icon">📨</div>
+          <div class="portal-card-title">EDI / Electronic Invoicing</div>
+          <span class="portal-badge pb-hybrid" style="margin-left:auto;">HYBRID</span>
+        </div>
+        <div class="portal-card-desc">PEPPOL BIS 3.0 invoicing with AS2/AS4 transport, XAdES-BES signing, SMP discovery, MDN/APERAK/MLC parsing, buy-side 3-way matching, batch scheduling, lifecycle management.</div>
+        <div class="portal-card-routes">
+          <span class="portal-route">/edi/invoicing</span>
+          <span class="portal-route">Certificates</span>
+          <span class="portal-route">Approvals</span>
+          <span class="portal-route">Batch Queue</span>
+        </div>
+        <div class="portal-card-footer"><span>Schema: edi_* (12 tables)</span><span>Phase 1-4 · 80+ controllers</span></div>
+      </div>
+
+      <div class="portal-card pc-docs">
+        <div class="portal-card-header">
+          <div class="portal-card-icon">📄</div>
+          <div class="portal-card-title">Document Management</div>
+          <span class="portal-badge pb-internal" style="margin-left:auto;">INTERNAL</span>
+        </div>
+        <div class="portal-card-desc">Document repository with category tree, version control, submit/review/approve workflow, and activity audit log. Routes: /documents</div>
+        <div class="portal-card-routes">
+          <span class="portal-route">/documents</span>
+          <span class="portal-route">Categories</span>
+          <span class="portal-route">Pending Reviews</span>
+          <span class="portal-route">Version History</span>
+        </div>
+        <div class="portal-card-footer"><span>Schema: sfas_documents (5 tables)</span><span>15 controllers · 15 routes</span></div>
+      </div>
+
+      <div class="portal-card pc-collab">
+        <div class="portal-card-header">
+          <div class="portal-card-icon">💬</div>
+          <div class="portal-card-title">Real-time Collaboration</div>
+          <span class="portal-badge pb-internal" style="margin-left:auto;">INTERNAL</span>
+        </div>
+        <div class="portal-card-desc">Socket.IO team chat, activity feed, push notifications, online presence, offline sync replay, and background event workers.</div>
+        <div class="portal-card-routes">
+          <span class="portal-route">/collaboration</span>
+          <span class="portal-route">Team Chat</span>
+          <span class="portal-route">Notifications</span>
+          <span class="portal-route">Activity Feed</span>
+        </div>
+        <div class="portal-card-footer"><span>Schema: sfas_collab (6 tables)</span><span>Socket.IO · Web Push</span></div>
+      </div>
+
+      <div class="portal-card pc-trace">
+        <div class="portal-card-header">
+          <div class="portal-card-icon">🔍</div>
+          <div class="portal-card-title">Lot / Serial Traceability</div>
+          <span class="portal-badge pb-internal" style="margin-left:auto;">INTERNAL</span>
+        </div>
+        <div class="portal-card-desc">Lot and serial number tracking with upstream/downstream trace movements, reservations, expiry tracking, and activity feed. Routes: /traceability</div>
+        <div class="portal-card-routes">
+          <span class="portal-route">/traceability</span>
+          <span class="portal-route">Lots</span>
+          <span class="portal-route">Serials</span>
+          <span class="portal-route">Reservations</span>
+        </div>
+        <div class="portal-card-footer"><span>Schema: sfas_traceability (4 tables)</span><span>20+ controllers · 24 routes</span></div>
+      </div>
+
+      <div class="portal-card pc-inv">
+        <div class="portal-card-header">
+          <div class="portal-card-icon">📊</div>
+          <div class="portal-card-title">Inventory Master Data</div>
+          <span class="portal-badge pb-internal" style="margin-left:auto;">REFERENCE</span>
+        </div>
+        <div class="portal-card-desc">Hierarchical item categories, UOM with conversion rules, and item tagging. Extends item master with brand, GTIN, UPC, HS codes, weight/dimensions.</div>
+        <div class="portal-card-routes">
+          <span class="portal-route">/inventory/master-data</span>
+          <span class="portal-route">Categories Tree</span>
+          <span class="portal-route">UOM Conversions</span>
+          <span class="portal-route">Tags</span>
+        </div>
+        <div class="portal-card-footer"><span>Schema: sfas_inventory (5 tables)</span><span>21 controllers · 22 routes</span></div>
+      </div>
+
+      <div class="portal-card pc-dev">
+        <div class="portal-card-header">
+          <div class="portal-card-icon">🔌</div>
+          <div class="portal-card-title">API Developer Portal</div>
+          <span class="portal-badge pb-external" style="margin-left:auto;">DEVELOPER</span>
+        </div>
+        <div class="portal-card-desc">Swagger UI at /api-docs, API key CRUD with scoped access, version lifecycle, deprecation logging, and version negotiation middleware.</div>
+        <div class="portal-card-routes">
+          <span class="portal-route">/developer</span>
+          <span class="portal-route">/api-docs</span>
+          <span class="portal-route">API Keys</span>
+          <span class="portal-route">Versions</span>
+        </div>
+        <div class="portal-card-footer"><span>Schema: sfas_developer (3 tables)</span><span>14K-line swagger.json</span></div>
+      </div>
+
+    </div>
+
+    <!-- INTEGRATION CROSS-CUTTING -->
+    <div class="integration-strip">
+      <div class="integration-pill">🔐 Cross-Cutting: Auth & RBAC</div>
+      <div class="integration-pill">📝 Cross-Cutting: Audit Logging</div>
+      <div class="integration-pill">🔒 Cross-Cutting: Optimistic Locking</div>
+      <div class="integration-pill">📨 Cross-Cutting: Notification Bus</div>
+      <div class="integration-pill">⚡ Cross-Cutting: Socket.IO Events</div>
+      <div class="integration-pill">🌐 Cross-Cutting: Multi-company</div>
+      <div class="integration-pill">💰 Cross-Cutting: Multi-currency FX</div>
+      <div class="integration-pill">📊 Cross-Cutting: 27 Reports Tabs</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="header-line"></div>
+  <footer>
+    <div class="footer-brand">SFAS</div>
+    <div class="footer-meta">SMART FINANCE ACCOUNTING SYSTEM · SCHEMA v2.0 · RECONSTRUCTED FROM ERP ARCHITECTURE BLUEPRINTS · PORTAL ECOSYSTEM · 2026</div>
+    <div class="footer-meta">USERS · MANAGEMENT · AUDITORS · DEVELOPERS</div>
+  </footer>
+
+</div>
+</body>
+</html>
